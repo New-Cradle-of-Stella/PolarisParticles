@@ -24,6 +24,41 @@ PolarisParticlesAPI.Effects.Files.RegisterEmbedded(
     "example_fireball");
 ```
 
+## 运行时播放
+
+登记完成后可以在任意游戏逻辑里播放。查询与播放分属 Particle / SETTER / AGD 三张原版目录，接口不做模糊猜测：
+
+```csharp
+EffectAPI fx = PolarisParticlesAPI.Effects;
+
+// 单粒子：在地图坐标生成一次
+fx.SpawnParticle("mymod_fire_spark", ParticleSpawnRequest.At(x, y));
+
+// SETTER 时间线：固定坐标播放
+fx.PlayTimeline("mymod_fireball_hit", EffectPlayRequest.At(x, y));
+
+// SETTER 时间线：跟随一个原生游戏对象（需实现 XX.IEfPInteractale）
+using EffectScope scope = fx.BeginScope();
+EffectRuntime charge = scope.PlayTimeline(
+    "mymod_fireball_prepare",
+    EffectPlayRequest.At(x, y)
+        .Follow(self, EffectFollowPoint.MagicCircle)
+        .Set("angle", angle)
+        .Set("facing", facingRight ? 1 : -1));
+
+charge.Stop(EffectStopMode.IncludeSpawnedEffects);
+// scope 结束时（using 退出）会自动停止它播放过的全部实例。
+```
+
+- `PlayTimeline` / `SpawnParticle` 失败时抛异常；`TryPlayTimeline` / `TrySpawnParticle` 把地图未加载、
+  key 不存在以及粒子容器已满这类可恢复失败以 `EffectPlayFailure` 返回，不抛异常。
+- `ContainsParticle` / `ContainsTimeline` / `ContainsAttackGhost` 用于播放前的存在性检查。
+- 时间线参数使用本次请求独立的 `VariableP`，不同调用之间不会互相污染参数。
+- `EffectRuntime` 只是原版 `PTCThread` / `EffectItem` token 的稳定包装；`Stop`/`Dispose` 幂等，
+  对已经自然结束或已被池回收的实例调用是安全的空操作。
+- `EffectScope` 收集它播放过的实例，`Dispose` 时统一停止，适合包住一次施法或一个阶段。
+- AGD（攻击残影）目前只提供 `ContainsAttackGhost` 查询；它依赖动作采样点，不适合通用的“在某坐标播放”接口。
+
 ## 游戏内 `.peffect` 调试
 
 在模组的 `BepInPlugin` 类上启用调试通道：

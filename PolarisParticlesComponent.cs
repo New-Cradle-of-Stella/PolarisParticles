@@ -54,6 +54,7 @@ namespace Polaris.Particles
             PEffectDebugRuntime.Shutdown();
             if (EffectFileRegistry.Instance.Files.Count != 0)
                 EfParticleManager.remAdditionalFile(PEffectParticleScriptPatch.ProductionRuntimeFile);
+            EffectFileRegistry.Instance.Reset();
         }
 
         private static bool HasDebugMarker(Assembly assembly)

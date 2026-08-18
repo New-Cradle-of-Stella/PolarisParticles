@@ -144,6 +144,16 @@ namespace Polaris.Particles.Effects
             return false;
         }
 
+        internal void Reset()
+        {
+            lock (_gate)
+            {
+                _pending.Clear();
+                _snapshot = EffectFileSnapshot.Empty;
+                _sealed = false;
+            }
+        }
+
         private static string ReadEmbeddedText(Assembly owner, string resourceName)
         {
             using (Stream stream = owner.GetManifestResourceStream(resourceName))
