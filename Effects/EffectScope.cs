@@ -18,10 +18,25 @@ namespace Polaris.Particles.Effects
             _api = api;
         }
 
+        public EffectRuntime PlayTimeline(TimelineKey key, EffectPlayRequest request)
+        {
+            RequireActive();
+            return Track(_api.PlayTimeline(key, request));
+        }
+
         public EffectRuntime PlayTimeline(string key, EffectPlayRequest request)
         {
             RequireActive();
             return Track(_api.PlayTimeline(key, request));
+        }
+
+        public bool TryPlayTimeline(TimelineKey key, EffectPlayRequest request, out EffectRuntime runtime, out EffectPlayFailure failure)
+        {
+            RequireActive();
+            bool ok = _api.TryPlayTimeline(key, request, out runtime, out failure);
+            if (ok)
+                Track(runtime);
+            return ok;
         }
 
         public bool TryPlayTimeline(string key, EffectPlayRequest request, out EffectRuntime runtime, out EffectPlayFailure failure)
@@ -33,10 +48,25 @@ namespace Polaris.Particles.Effects
             return ok;
         }
 
+        public EffectRuntime SpawnParticle(ParticleKey key, ParticleSpawnRequest request)
+        {
+            RequireActive();
+            return Track(_api.SpawnParticle(key, request));
+        }
+
         public EffectRuntime SpawnParticle(string key, ParticleSpawnRequest request)
         {
             RequireActive();
             return Track(_api.SpawnParticle(key, request));
+        }
+
+        public bool TrySpawnParticle(ParticleKey key, ParticleSpawnRequest request, out EffectRuntime runtime, out EffectPlayFailure failure)
+        {
+            RequireActive();
+            bool ok = _api.TrySpawnParticle(key, request, out runtime, out failure);
+            if (ok)
+                Track(runtime);
+            return ok;
         }
 
         public bool TrySpawnParticle(string key, ParticleSpawnRequest request, out EffectRuntime runtime, out EffectPlayFailure failure)

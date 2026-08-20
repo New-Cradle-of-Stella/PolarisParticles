@@ -356,7 +356,8 @@ EffectScope 只保存自己创建的 Runtime。实例自然结束后立即从 sc
 | Timeline 参数 | 每次请求新建 VariableP |
 | WorldTop | Map2d.getEffectTop |
 | World | Map2d.getEffect |
-| 动态跟随 | IEfPInteractale + FOLLOW |
+| 动态跟随（原生 owner） | IEfPInteractale + FOLLOW |
+| 动态跟随（IMapDrawTarget） | EffectDrawTargetAnchor：每帧 getEffectReposition 现读目标坐标，follow 用 NO_FOLLOW；目标失效按 EffectTargetLostBehavior 走 PTCThread.kill(true/false) 或不重定位 |
 
 公开 API 不引用 PTCThread、EffectItem、EfParticle、AttackGhostDrawer、VariableP、POSTM、MeshDrawer 或 Unity ParticleSystem。
 

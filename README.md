@@ -50,6 +50,49 @@ charge.Stop(EffectStopMode.IncludeSpawnedEffects);
 // scope 结束时（using 退出）会自动停止它播放过的全部实例。
 ```
 
+### 跟随 Polaris 侧的可追踪物体（轨迹特效）
+
+任何实现 `Polaris.Drawing.IMapDrawTarget` 的东西都能直接当跟随目标，不需要碰原生类型 —— PolarisMagic 的
+`MagicObject`（魔法对象）与 `MagicEntity`（魔法实体）、PolarisCore 的 `GameCharacter` 都已经实现：
+
+```csharp
+// PolarisMagic 的 .pmagic.cs 里：让时间线跟着一个魔法对象跑，做拖尾/轨迹
+private async Task RunAsync(MagicRuntimeContext context, CancellationToken token)
+{
+    MagicObject head = context.Magic.CreateObject();
+    head.Position = context.Self.Position;
+    head.Velocity = new GameVector2(6f, 0f);
+
+    using EffectScope fx = PolarisParticlesAPI.Effects.BeginScope();
+    fx.PlayTimeline("mymod_fireball_trail", EffectPlayRequest.Following(head));
+
+    while (!token.IsCancellationRequested)
+    {
+        head.Advance(context.Clock);
+        await context.NextTickAsync(token);
+    }
+}
+```
+
+`Following` 的目标不可用（魔法对象已 `Dispose`、魔法实体已回池、角色已离场）之后按
+`EffectTargetLostBehavior` 处理，默认 `StopTimeline`：停止发射，已经拖在后面的余迹自然播完。另两档是
+`Freeze`（不再重定位，时间线继续跑）和 `StopAll`（连 stock 子粒子一起清掉）。起播时目标就不可用会以
+`EffectPlayFailure.TargetUnavailable` 返回。
+
+这条路径能做到的和做不到的（都是原版 `PTCThread` 的既有语义，API 不做美化）：
+
+- **跟的是发射位置**。每帧被重设坐标的只有被线程 stock 的子粒子，也就是 `.peffect` 里 key 带 `*` 前缀的
+  那些；普通子粒子在当帧的位置出生之后就自己飞了。要"整团粒子跟着走"必须在 `.peffect` 里写 `*`。
+- **只有单粒子的 `SpawnParticle` 不能跟随**：原版 `PtcN` 只吃一次性坐标，没有 listener。
+- **只有一个坐标**：物体的旋转与缩放传不过去（也没有 z），要转向就在起播时 `Set("agR", angle)` 传一次。
+- **没有骨骼锚点**：`IMapDrawTarget` 只给中心坐标，所以脚本里的 `%FOLLOW HEAD` / `HIP` /
+  `MAGICCIRCLE` 在这条路径上一律退化成中心点。要骨骼跟随得用
+  `Follow(owner, EffectFollowPoint.Head)` 那条原生 owner 路径。
+- 魔法对象**不需要挂任何图片**也能当轨迹的锚：没有挂载项时它不会创建 Drawing Surface，就是一个纯粹的
+  会动的坐标。
+- 粒子走原版特效层（`EffectLayer.World` / `WorldTop`），和 Drawing 的 `DrawPlane` 是两套独立的深度体系，
+  粒子不会夹在魔法对象自己的绘制节点之间。
+
 - `PlayTimeline` / `SpawnParticle` 失败时抛异常；`TryPlayTimeline` / `TrySpawnParticle` 把地图未加载、
   key 不存在以及粒子容器已满这类可恢复失败以 `EffectPlayFailure` 返回，不抛异常。
 - `ContainsParticle` / `ContainsTimeline` / `ContainsAttackGhost` 用于播放前的存在性检查。

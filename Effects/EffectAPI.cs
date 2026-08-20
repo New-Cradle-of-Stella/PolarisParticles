@@ -10,13 +10,26 @@ namespace Polaris.Particles.Effects
         public EffectFileAPI Files { get; } = new EffectFileAPI();
 
         /// <summary>key 是否已注册为单粒子模板。</summary>
+        public bool ContainsParticle(ParticleKey key) => ContainsParticle(key.Value);
+
+        /// <summary>key 是否已注册为单粒子模板。</summary>
         public bool ContainsParticle(string key) => EffectPlaybackBackend.ContainsParticle(key);
+
+        /// <summary>key 是否已注册为 SETTER 时间线。</summary>
+        public bool ContainsTimeline(TimelineKey key) => ContainsTimeline(key.Value);
 
         /// <summary>key 是否已注册为 SETTER 时间线。</summary>
         public bool ContainsTimeline(string key) => EffectPlaybackBackend.ContainsTimeline(key);
 
         /// <summary>key 是否已注册为攻击残影（AGD）。</summary>
+        public bool ContainsAttackGhost(AttackGhostKey key) => ContainsAttackGhost(key.Value);
+
+        /// <summary>key 是否已注册为攻击残影（AGD）。</summary>
         public bool ContainsAttackGhost(string key) => EffectPlaybackBackend.ContainsAttackGhost(key);
+
+        /// <summary>播放一个 SETTER 时间线；失败时抛出 <see cref="InvalidOperationException"/>。</summary>
+        public EffectRuntime PlayTimeline(TimelineKey key, EffectPlayRequest request) =>
+            PlayTimeline(key.Value, request);
 
         /// <summary>播放一个 SETTER 时间线；失败时抛出 <see cref="InvalidOperationException"/>。</summary>
         public EffectRuntime PlayTimeline(string key, EffectPlayRequest request)
@@ -25,6 +38,12 @@ namespace Polaris.Particles.Effects
                 throw new InvalidOperationException(EffectPlaybackBackend.DescribeFailure("timeline", key, failure));
             return runtime;
         }
+
+        /// <summary>
+        /// 播放一个 SETTER 时间线。地图未加载或 key 不存在是可恢复失败，返回 false 而不抛异常。
+        /// </summary>
+        public bool TryPlayTimeline(TimelineKey key, EffectPlayRequest request, out EffectRuntime runtime, out EffectPlayFailure failure) =>
+            TryPlayTimeline(key.Value, request, out runtime, out failure);
 
         /// <summary>
         /// 播放一个 SETTER 时间线。地图未加载或 key 不存在是可恢复失败，返回 false 而不抛异常。
@@ -38,12 +57,22 @@ namespace Polaris.Particles.Effects
         }
 
         /// <summary>生成一个单粒子；失败时抛出 <see cref="InvalidOperationException"/>。</summary>
+        public EffectRuntime SpawnParticle(ParticleKey key, ParticleSpawnRequest request) =>
+            SpawnParticle(key.Value, request);
+
+        /// <summary>生成一个单粒子；失败时抛出 <see cref="InvalidOperationException"/>。</summary>
         public EffectRuntime SpawnParticle(string key, ParticleSpawnRequest request)
         {
             if (!TrySpawnParticle(key, request, out EffectRuntime runtime, out EffectPlayFailure failure))
                 throw new InvalidOperationException(EffectPlaybackBackend.DescribeFailure("particle", key, failure));
             return runtime;
         }
+
+        /// <summary>
+        /// 生成一个单粒子。地图未加载、key 不存在或容器已满都是可恢复失败，返回 false 而不抛异常。
+        /// </summary>
+        public bool TrySpawnParticle(ParticleKey key, ParticleSpawnRequest request, out EffectRuntime runtime, out EffectPlayFailure failure) =>
+            TrySpawnParticle(key.Value, request, out runtime, out failure);
 
         /// <summary>
         /// 生成一个单粒子。地图未加载、key 不存在或容器已满都是可恢复失败，返回 false 而不抛异常。

@@ -1,5 +1,6 @@
 using System;
 using m2d;
+using Polaris.Drawing;
 using UnityEngine;
 using XX;
 
@@ -67,8 +68,9 @@ namespace Polaris.Particles.Effects
                 return false;
             }
 
-            IEfPInteractale listener = request.Owner ?? new EffectPositionAnchor(request.X, request.Y);
-            PTCThread.StFollow follow = request.Owner != null ? ToNative(request.FollowPoint) : PTCThread.StFollow.NO_FOLLOW;
+            if (!TryResolveListener(request, out IEfPInteractale listener, out PTCThread.StFollow follow, out failure))
+                return false;
+
             VariableP variables = BuildVariables(request);
 
             PTCThreadRunner.clearVars();
@@ -83,8 +85,53 @@ namespace Polaris.Particles.Effects
             EffectPlayFailure.MapNotLoaded => $"Cannot play {kind} '{key}': no map is currently loaded.",
             EffectPlayFailure.KeyNotFound => $"Cannot play {kind} '{key}': the key is not registered.",
             EffectPlayFailure.EffectContainerFull => $"Cannot play {kind} '{key}': the effect container is full.",
+            EffectPlayFailure.TargetUnavailable => $"Cannot play {kind} '{key}': the follow target is not available.",
             _ => $"Cannot play {kind} '{key}'.",
         };
+
+        /// <summary>
+        /// 决定谁当这条时间线的 listener。三条路径互斥：原生 owner（支持骨骼 follow 点）、
+        /// Polaris 侧可追踪目标（只有中心坐标，包一层动态 anchor）、固定坐标。
+        ///
+        /// 后两条都用 NO_FOLLOW：anchor 自己无条件汇报坐标，不看 follow 参数——原版 <c>fineReposit</c>
+        /// 每帧都会调 <c>getEffectReposition</c>，跟 follow 取值无关。
+        /// </summary>
+        private static bool TryResolveListener(
+            EffectPlayRequest request,
+            out IEfPInteractale listener,
+            out PTCThread.StFollow follow,
+            out EffectPlayFailure failure)
+        {
+            failure = EffectPlayFailure.None;
+
+            if (request.Owner != null)
+            {
+                listener = request.Owner;
+                follow = ToNative(request.FollowPoint);
+                return true;
+            }
+
+            if (request.DrawTarget != null)
+            {
+                // 起播就取不到坐标的目标不值得开一条线程：它要么已经失效，要么还没进地图。
+                if (!request.DrawTarget.TryGetMapPosition(out DrawPoint position))
+                {
+                    listener = null;
+                    follow = PTCThread.StFollow.NO_FOLLOW;
+                    failure = EffectPlayFailure.TargetUnavailable;
+                    return false;
+                }
+
+                listener = new EffectDrawTargetAnchor(
+                    request.DrawTarget, request.TargetLostBehavior, position.X, position.Y);
+                follow = PTCThread.StFollow.NO_FOLLOW;
+                return true;
+            }
+
+            listener = new EffectPositionAnchor(request.X, request.Y);
+            follow = PTCThread.StFollow.NO_FOLLOW;
+            return true;
+        }
 
         private static bool TryResolveSetter(EffectLayer layer, out IEffectSetter setter, out EffectPlayFailure failure)
         {

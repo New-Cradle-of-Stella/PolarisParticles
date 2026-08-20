@@ -5,7 +5,8 @@ namespace Polaris.Particles.Effects
 {
     /// <summary>
     /// 一个只报告固定坐标的 <see cref="IEfPInteractale"/>，让固定坐标播放也能响应
-    /// SETTER 的位置指令与重定位请求。
+    /// SETTER 的位置指令与重定位请求。要跟着会动的东西跑用
+    /// <see cref="EffectDrawTargetAnchor"/>。
     /// </summary>
     internal sealed class EffectPositionAnchor : IEfPInteractale
     {

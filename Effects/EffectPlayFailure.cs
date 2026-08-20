@@ -14,5 +14,8 @@ namespace Polaris.Particles.Effects
 
         /// <summary>目标特效容器已满。</summary>
         EffectContainerFull,
+
+        /// <summary>请求跟随的可追踪目标此刻不可用（已释放、已回池、已离开地图）。</summary>
+        TargetUnavailable,
     }
 }
