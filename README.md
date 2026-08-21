@@ -18,7 +18,7 @@ PolarisTools 的 `.peffect` 新建项模板会自动设置这个 Build Action。
 需要自定义虚拟名或登记非标准资源名时，可在模组 `Awake` 中显式注册：
 
 ```csharp
-PolarisParticlesAPI.Effects.Files.RegisterEmbedded(
+ParticlesAPI.Effects.Files.RegisterEmbedded(
     typeof(ExamplePlugin).Assembly,
     "ExampleMod.Effects.fireball.peffect",
     "example_fireball");
@@ -29,7 +29,7 @@ PolarisParticlesAPI.Effects.Files.RegisterEmbedded(
 登记完成后可以在任意游戏逻辑里播放。查询与播放分属 Particle / SETTER / AGD 三张原版目录，接口不做模糊猜测：
 
 ```csharp
-EffectAPI fx = PolarisParticlesAPI.Effects;
+EffectAPI fx = ParticlesAPI.Effects;
 
 // 单粒子：在地图坐标生成一次
 fx.SpawnParticle("mymod_fire_spark", ParticleSpawnRequest.At(x, y));
@@ -63,7 +63,7 @@ private async Task RunAsync(MagicRuntimeContext context, CancellationToken token
     head.Position = context.Self.Position;
     head.Velocity = new GameVector2(6f, 0f);
 
-    using EffectScope fx = PolarisParticlesAPI.Effects.BeginScope();
+    using EffectScope fx = ParticlesAPI.Effects.BeginScope();
     fx.PlayTimeline("mymod_fireball_trail", EffectPlayRequest.Following(head));
 
     while (!token.IsCancellationRequested)

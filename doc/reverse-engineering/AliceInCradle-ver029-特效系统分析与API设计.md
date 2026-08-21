@@ -214,7 +214,7 @@ API 将二者拆成互斥的 `WithDelay` 与 `WithStartAge`，避免“负延迟
 
 新方案的公开契约统一为：
 
-- `PolarisParticlesAPI.Effects`：唯一静态入口，返回 `EffectAPI`。
+- `ParticlesAPI.Effects`：唯一静态入口，返回 `EffectAPI`。
 - `EffectFileAPI`：登记内嵌 `.peffect` 文件并建立虚拟文件目录。
 - `EffectPlayRequest`：时间线的 anchor、空间、层、跟随、参数与 owner。
 - `ParticleSpawnRequest`：单粒子的坐标、层、寿命、延迟和起播年龄。
@@ -225,7 +225,7 @@ API 将二者拆成互斥的 `WithDelay` 与 `WithStartAge`，避免“负延迟
 示例：
 
 ~~~csharp
-using EffectScope fx = PolarisParticlesAPI.Effects.BeginScope(owner: Context.Self);
+using EffectScope fx = ParticlesAPI.Effects.BeginScope(owner: Context.Self);
 
 EffectRuntime charge = fx.PlayTimeline(
     "mymod_fireball_prepare",

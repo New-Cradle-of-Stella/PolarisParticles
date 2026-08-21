@@ -236,7 +236,7 @@ Polaris 不重新解析全部 DSL，但应做只读扫描，用于在进入原�
 ### 10.1 入口
 
 ~~~csharp
-public static class PolarisParticlesAPI
+public static class ParticlesAPI
 {
     public static EffectAPI Effects { get; }
 }
