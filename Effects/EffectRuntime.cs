@@ -73,8 +73,7 @@ namespace Polaris.Particles.Effects
         /// <summary>停止播放。对已经停止或已经自然结束/被回收的实例调用是安全的空操作。</summary>
         public void Stop(EffectStopMode mode = EffectStopMode.IncludeSpawnedEffects)
         {
-            if (_stopped)
-                return;
+            // IsAlive 已经涵盖了"之前停过"这一种情况。
             if (!IsAlive)
                 return;
 

@@ -136,7 +136,13 @@ namespace Polaris.Particles.Effects
         private static bool TryResolveSetter(EffectLayer layer, out IEffectSetter setter, out EffectPlayFailure failure)
         {
             Map2d map = M2DBase.Instance?.curMap;
-            setter = map == null ? null : (layer == EffectLayer.WorldTop ? map.getEffectTop() : map.getEffect());
+            if (map == null)
+                setter = null;
+            else if (layer == EffectLayer.WorldTop)
+                setter = map.getEffectTop();
+            else
+                setter = map.getEffect();
+
             if (setter == null)
             {
                 failure = EffectPlayFailure.MapNotLoaded;
