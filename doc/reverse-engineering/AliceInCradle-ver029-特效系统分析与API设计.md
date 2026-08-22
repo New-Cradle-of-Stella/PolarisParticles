@@ -265,9 +265,9 @@ backend 的关键规则：
 2. `EfParticle` 使用大量静态 scratch 字段（`Md/cx/cy/tz/ran/...`），只能在游戏主线程、非重入地绘制。
 3. 有 5 个重复键：`cp_alchemy_pot_light`、`fatal_breathe`、`ui_absorb_darken`、`mimic_ironball_init_grawl`、`webshot_appear`。首次加载时后定义覆盖前定义；可能是有意 override，也可能是遗留资产。
 4. `magic.particle` 的 `hit_en_itembomb_mag_halo` 写了 `type TOP_ADD`；`TOP_ADD` 实际是 `EFLAY`，不是 `PtTYPE`。因为该段 clone 了已有模板，renderer 会保留继承值，但 top layer 没有被正确设置，疑似资产笔误。
-5. `PostEffect` 构造 `AMtr[POSTM.SEPIA]` 时传入的内部 type 是 `POSTM.STONEOVER`。数组槽仍可工作，但内部标识/诊断可能错误，升级兼容层时应做行为测试。
+5. `PostEffect` 构造 `AMtr[POSTM.SEPIA]` 时传入的内部 type 是 `POSTM.STONEOVER`。数组槽仍可工作，但内部标识/诊断可能错误，升级兼容层时应做运行时验证。
 6. programmatic drawer 依赖反射命名 `fnRunDraw_{key}`。混淆、改名或版本新增参数都会造成运行时找不到效果；backend 应启动时预检 allowlist。
-7. 主 `EF`、顶层 `EFT` 都有硬上限，粒子数还受 `X.EF_LEVEL_NORMAL/UI` 质量设置裁剪。视觉测试不应假设固定粒子数量。
+7. 主 `EF`、顶层 `EFT` 都有硬上限，粒子数还受 `X.EF_LEVEL_NORMAL/UI` 质量设置裁剪。视觉验证不应假设固定粒子数量。
 
 ## 9. 验证与下一步
 

@@ -9,8 +9,8 @@ namespace Polaris.Particles.Effects
         internal EffectFileAPI() { }
 
         /// <summary>
-        /// 显式登记一份内嵌 .peffect。须在 PolarisParticles 的 Start 阶段封存目录之前调用，
-        /// 推荐在模组 Awake 中调用。virtualName 为空时取资源名最后一段的文件名。
+        /// 显式登记一份内嵌 .peffect，须在 PolarisParticles 的 Start 阶段封存目录之前调用（推荐放在模组 Awake 中）。
+        /// virtualName 为空时取资源名最后一段作为文件名。
         /// </summary>
         public void RegisterEmbedded(Assembly owner, string resourceName, string virtualName = null) =>
             EffectFileRegistry.Instance.RegisterEmbedded(owner, resourceName, virtualName);

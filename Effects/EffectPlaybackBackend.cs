@@ -90,11 +90,8 @@ namespace Polaris.Particles.Effects
         };
 
         /// <summary>
-        /// 决定谁当这条时间线的 listener。三条路径互斥：原生 owner（支持骨骼 follow 点）、
-        /// Polaris 侧可追踪目标（只有中心坐标，包一层动态 anchor）、固定坐标。
-        ///
-        /// 后两条都用 NO_FOLLOW：anchor 自己无条件汇报坐标，不看 follow 参数——原版 <c>fineReposit</c>
-        /// 每帧都会调 <c>getEffectReposition</c>，跟 follow 取值无关。
+        /// 决定谁当这条时间线的 listener：原生 owner（支持骨骼 follow 点）、Polaris 侧可追踪目标（只有中心坐标，包一层动态 anchor）、
+        /// 固定坐标，三者互斥。后两条都用 NO_FOLLOW，因为对应的 anchor 无条件汇报坐标，不看 follow 参数。
         /// </summary>
         private static bool TryResolveListener(
             EffectPlayRequest request,

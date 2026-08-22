@@ -6,16 +6,9 @@ using XX;
 namespace Polaris.Particles.Effects
 {
     /// <summary>
-    /// 把一个 <see cref="IMapDrawTarget"/> 包成 <see cref="IEfPInteractale"/>：每帧现读目标坐标，
-    /// 而不是像 <see cref="EffectPositionAnchor"/> 那样钉死在构造时的那一点。让 SETTER 时间线可以跟着
-    /// Polaris 侧的可追踪物体（魔法对象、魔法实体、角色包装器）跑，而调用方不必碰任何原生类型。
-    ///
-    /// 原版每帧在 <c>PTCThread.run</c> 里通过 <c>fineReposit</c> 调一次
-    /// <see cref="getEffectReposition"/>（游戏主线程），所以这里不缓存、不插值——目标报什么坐标就用什么。
-    ///
-    /// 只有中心坐标：<see cref="IMapDrawTarget"/> 拿不到骨骼，因此 head/hip/magic-circle 这些 follow 点
-    /// 在这条路径上一律退化成中心点，传进来的 follow 参数被忽略（与 <see cref="EffectPositionAnchor"/>
-    /// 对 NO_FOLLOW 的处理一致：照样汇报坐标）。
+    /// 把一个 <see cref="IMapDrawTarget"/> 包成 <see cref="IEfPInteractale"/>：每帧现读目标坐标（不缓存、不插值），
+    /// 而不是像 <see cref="EffectPositionAnchor"/> 那样钉死在构造时的那一点，让 SETTER 时间线可以跟着 Polaris 侧的可追踪物体跑。
+    /// 只有中心坐标：<see cref="IMapDrawTarget"/> 拿不到骨骼，因此 head/hip/magic-circle 这些 follow 点在这条路径上一律退化成中心点。
     /// </summary>
     internal sealed class EffectDrawTargetAnchor : IEfPInteractale
     {
@@ -42,11 +35,8 @@ namespace Polaris.Particles.Effects
                 return true;
             }
 
-            // 目标没了。Freeze 直接用原版对"listener 不给坐标"的反应（本帧不重定位，时间线继续跑）；
-            // 另外两档要主动收尾——getEffectReposition 是唯一能拿到 St 的回调，也就是目标失效时
-            // 唯一能停掉线程的入口。这里 kill 是安全的：原版随后只会跑一次 base.run，届时
-            // CurrentReading 已被置空，stock 子粒子会被摘出线程而不是被 destruct（PTCThread 的
-            // RBase 是 send_destruct: false）。
+            // 目标没了：Freeze 沿用原版对"listener 不给坐标"的反应（本帧不重定位，时间线继续跑）；
+            // 另外两档要在这里主动 kill，因为 getEffectReposition 是目标失效时唯一能拿到 St 的收尾入口，且事后 stock 子粒子会被摘出线程而不是被 destruct。
             switch (_onTargetLost)
             {
                 case EffectTargetLostBehavior.StopTimeline:
